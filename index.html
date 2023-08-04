@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <meta charset="UTF-8">
+      <title>商品入库条码生成</title>
+</head>
+
+<body>
+<!--创建一个表单-->
+      <form id="form">
+
+<!--获取图片作为按钮输入条码值-->
+      <img id="button1" src="测试图片1.png" onclick="fillTable(11579)">
+      <img id="button2" src="测试图片2.png" onclick="fillTable(22650)">
+
+      <br>
+      <input type="button" value="导出" onclick="exportXlsx()"> 
+
+<!--表格显示区域-->
+      <table id="table">
+      </table>
+
+      </form>
+</body>
+
+<script src="xlsx/xlsx.full.min.js"></script>
+<script src="FileSaver/FileSaver.min.js"></script>
+
+<script>
+//定义data的值为currentRow当前行的值为0，用于存储当前行二维数组
+      var data = [currentRow = 0];
+      //var currentRow = 0;
+
+//定义fillTable表格函数，用于将number按钮的条码值填入单元格
+      function fillTable(number) {
+
+//定义table，用于查找HTML中id为table的元素的值
+           //var table = document.getElementById("table");
+
+//定义row，用于在HTML的<table>末尾插入<tr>新行，值改为0则是在开头插入新行
+           var row = table.insertRow(-1);
+
+//如果当前行二维数组值非0，则当前行二维数组值为[]，改成[number]可以运行
+           if (!data[currentRow]) {data[currentRow] = [];}
+
+//定义cell，用于在<table>的<tr>末尾插入cell新单元格，值改为0则是在开头插入新单元格
+           var cell = row.insertCell(-1);
+
+//HTML的cell单元格内容为number按钮的条码值
+           cell.innerHTML = number;
+
+//将按钮的条码值存入当前行二维数组
+           data[currentRow].push(number);
+
+//如果当前行二维数组值长度大于1，则当前行的值递增
+           if (data[currentRow].length >= 1) {currentRow++;}
+      }
+
+//定义exportXLSX导出函数，用于下载.xlsx文件
+      function exportXlsx(){
+
+//定义ws工作表，用于获取二维数组转换为工作表
+           var ws = XLSX.utils.aoa_to_sheet([data]);
+
+//循环执行代码块，循环开始前变量i值为0，并且i值小于二维数组值长度，结束后执行i值递增
+           for (i = 0; i < data.length; i++) 
+
+//代码块用于v：原始值，t:内行，s：string转为Text
+           //{ws[`A${i + 2}`] = {v: data[i], t: 's'};}
+
+//定义wb工作簿，用于创建新工作簿
+           var wb = XLSX.utils.book_new();
+
+//将获取data的工作表添加到工作簿中，命名为Sheet1
+           XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+//定义wbout，用于写入工作簿为二进制格式，输出工作簿类型为xlsx，写入类型为二进制字符串
+           var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+
+//定义buf缓冲区，用于创建存储二进制数据的缓冲区
+           var buf = new ArrayBuffer(wbout.length);
+
+//定义view，
+           var view = new Uint8Array(buf);
+
+//将二进制字符串转换为二进制数据
+           for (var i=0; i<wbout.length; i++) {
+
+//
+                view[i] = wbout.charCodeAt(i) & 0xFF;
+           }
+
+//使用FileSaver.js的saveAs函数保存二进制数据为xlsx格式的工作表
+           saveAs(new Blob([buf],{type:"application/octet-stream"}), "表格.xlsx")
+           //const blob = new Blob(["application/octet-stream"])
+           //saveAs(Blob,"表格.xlsx")
+
+     };
+</script>
+</html>
